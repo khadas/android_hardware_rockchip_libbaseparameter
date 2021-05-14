@@ -123,6 +123,12 @@ struct cubic_lut_data{
     u16 lblue[4913];
 };
 
+struct framebuffer_info {
+    u32 framebuffer_width;
+    u32 framebuffer_height;
+    u32 fps;
+};
+
 struct disp_info {
     char disp_head_flag[6]; /* disp 头标识，"DISP_N", N 可以是0-7, size: 6 Byte*/
     struct screen_info screen_info[4]; /* 支持热插拔的设备接不同的设备，如DP出来可能接 DP->HDMI 或者 DP->VGA, size: 72 * 4 = 288 Byte */
@@ -130,7 +136,8 @@ struct disp_info {
     struct overscan_info overscan_info; /* 过扫描信息, size: 16 Byte */
     struct gamma_lut_data gamma_lut_data; /* gamma 信息, size: 6146 Byte */
     struct cubic_lut_data cubic_lut_data; /* 3D lut信息, size: 29480 Byte */
-    u32 reserved[256]; /* 预留, size: 1024 Byte*/
+    struct framebuffer_info framebuffer_info; /* framebuffer信息, size: 12 Byte */
+    u32 reserved[244]; /* 预留, size: 244 Byte*/
     u32 crc; /* CRC 校验, size: 4 Byte */
 };
 
@@ -182,6 +189,8 @@ public:
     int set_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data);
     int set_disp_header(unsigned int index, unsigned int connector_type, unsigned int connector_id);
     bool validate();
+    int get_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info);
+    int set_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info);
 private:
     const char* get_baseparameter_file();
     u32 get_crc32(unsigned char *buf, unsigned int size);

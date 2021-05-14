@@ -525,3 +525,25 @@ u32 baseparameter_api::get_crc32(unsigned char *buf, unsigned int size) {
 
     return crc^0xFFFFFFFF;
 }
+
+int baseparameter_api::get_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info) {
+    struct disp_info disp;
+    int ret = get_disp_info(connector_type, connector_id, &disp);
+    if(ret < 0){
+        return ret;
+    }else {
+        memcpy(info, &(disp.framebuffer_info) ,sizeof(framebuffer_info));
+        return 0;
+    }
+}
+
+int baseparameter_api::set_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info) {
+    struct disp_info disp;
+    int ret = get_disp_info(connector_type, connector_id, &disp);
+    if(ret < 0){
+        return ret;
+    }else {
+        memcpy(&(disp.framebuffer_info), info, sizeof(framebuffer_info));
+        return set_disp_info(connector_type, connector_id, &disp);
+    }
+}
