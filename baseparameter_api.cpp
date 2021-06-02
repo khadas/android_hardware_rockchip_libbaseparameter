@@ -547,3 +547,33 @@ int baseparameter_api::set_framebuffer_info(unsigned int connector_type, unsigne
         return set_disp_info(connector_type, connector_id, &disp);
     }
 }
+
+int baseparameter_api::get_all_disp_header(struct disp_header *headers) {
+    int file, ret;
+    const char *baseparameterfile = get_baseparameter_file();
+    if (!baseparameterfile) {
+        sync();
+        return -ENOENT;
+    }
+    pthread_rwlock_rdlock(&rwlock);
+    file = open(baseparameterfile, O_RDWR);
+    if (file < 0) {
+        LOGD("base paramter file can not be opened \n");
+        sync();
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+
+    lseek(file, 8, SEEK_SET);
+    ret = read(file, headers, sizeof(disp_header) * 8);
+    if(ret < 0){
+        sync();
+        close(file);
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    sync();
+    close(file);
+    pthread_rwlock_unlock(&rwlock);
+    return 0;
+}

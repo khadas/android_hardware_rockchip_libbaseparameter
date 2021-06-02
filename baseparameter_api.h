@@ -188,6 +188,7 @@ public:
     int get_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data);
     int set_cubic_lut_data(unsigned int connector_type, unsigned int connector_id, struct cubic_lut_data *data);
     int set_disp_header(unsigned int index, unsigned int connector_type, unsigned int connector_id);
+    int get_all_disp_header(struct disp_header *headers);
     bool validate();
     int get_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info);
     int set_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info);
