@@ -18,6 +18,7 @@
 #include "baseparameter_api.h"
 
 #define BASEPARAMETER_IMAGE_SIZE 1024*1024
+#define BACKUP_OFFSET 512*1024
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG , "baseparameter_api", __VA_ARGS__)
 
 static const unsigned int crc32_table[] =
@@ -573,6 +574,75 @@ int baseparameter_api::get_all_disp_header(struct disp_header *headers) {
         return -EIO;
     }
     sync();
+    close(file);
+    pthread_rwlock_unlock(&rwlock);
+    return 0;
+}
+
+int baseparameter_api::get_baseparameter_info(unsigned int index, baseparameter_info *info) {
+    int file, ret, offset;
+    const char *baseparameterfile = get_baseparameter_file();
+    if (!baseparameterfile) {
+        sync();
+        return -ENOENT;
+    }
+    pthread_rwlock_rdlock(&rwlock);
+    file = open(baseparameterfile, O_RDWR);
+    if (file < 0) {
+        LOGD("base paramter file can not be opened \n");
+        sync();
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    if(index == BASE_PARAMETER){
+        offset = 0;
+    } else {
+        offset = BACKUP_OFFSET;
+    }
+    lseek(file, offset, SEEK_SET);
+    ret = read(file, info, sizeof(baseparameter_info));
+    if(ret < 0){
+        sync();
+        close(file);
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    sync();
+    close(file);
+    pthread_rwlock_unlock(&rwlock);
+    return 0;
+}
+
+int baseparameter_api::set_baseparameter_info(unsigned int index, baseparameter_info *info) {
+    int file, ret, offset;
+    const char *baseparameterfile = get_baseparameter_file();
+    if (!baseparameterfile) {
+        sync();
+        return -ENOENT;
+    }
+    pthread_rwlock_wrlock(&rwlock);
+    file = open(baseparameterfile, O_RDWR);
+    if (file < 0) {
+        LOGD("base paramter file can not be opened \n");
+        sync();
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    if(index == BASE_PARAMETER){
+        offset = 0;
+     } else {
+        offset = BACKUP_OFFSET;
+    }
+    lseek(file, offset, SEEK_SET);
+    ret = write(file, (char*)(info), sizeof(baseparameter_info));
+    if (ret < 0) {
+        LOGD("fail to write");
+        sync();
+        close(file);
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    fsync(file);
     close(file);
     pthread_rwlock_unlock(&rwlock);
     return 0;

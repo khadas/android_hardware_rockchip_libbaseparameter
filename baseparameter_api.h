@@ -42,6 +42,8 @@
 #define DEFAULT_CONTRAST 50
 #define DEFAULT_SATURATION 50
 #define DEFAULT_HUE 50
+#define BASE_PARAMETER 0
+#define BACKUP_PARAMETER 1
 
 typedef unsigned short u16;
 typedef unsigned int u32;
@@ -192,6 +194,8 @@ public:
     bool validate();
     int get_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info);
     int set_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info);
+    int get_baseparameter_info(unsigned int index, baseparameter_info *info);
+    int set_baseparameter_info(unsigned int index, baseparameter_info *info);
 private:
     const char* get_baseparameter_file();
     u32 get_crc32(unsigned char *buf, unsigned int size);
