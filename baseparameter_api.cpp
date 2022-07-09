@@ -647,3 +647,136 @@ int baseparameter_api::set_baseparameter_info(unsigned int index, baseparameter_
     pthread_rwlock_unlock(&rwlock);
     return 0;
 }
+
+int baseparameter_api::set_pq_tuning_info(struct pq_tuning_info *info) {
+    int file, ret;
+    u32 crc32 = get_crc32((unsigned char *)info, sizeof(pq_tuning_info) - sizeof(u32));
+    info->crc = crc32;
+
+    const char *baseparameterfile = get_baseparameter_file();
+    if (!baseparameterfile) {
+        sync();
+        return -ENOENT;
+    }
+    pthread_rwlock_wrlock(&rwlock);
+    file = open(baseparameterfile, O_RDWR);
+    if (file < 0) {
+        LOGD("base paramter file can not be opened \n");
+        sync();
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    lseek(file, sizeof(baseparameter_info) - sizeof(pq_tuning_info), SEEK_SET);
+    ret = write(file, (char*)(info), sizeof(pq_tuning_info));
+    if (ret < 0) {
+        LOGD("fail to write");
+        sync();
+        close(file);
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    fsync(file);
+    close(file);
+    pthread_rwlock_unlock(&rwlock);
+    return 0;
+}
+
+int baseparameter_api::get_pq_tuning_info(struct pq_tuning_info *info) {
+    int file, ret;
+    const char *baseparameterfile = get_baseparameter_file();
+    if (!baseparameterfile) {
+        sync();
+        return -ENOENT;
+    }
+    pthread_rwlock_rdlock(&rwlock);
+    file = open(baseparameterfile, O_RDWR);
+    if (file < 0) {
+        LOGD("base paramter file can not be opened \n");
+        sync();
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    lseek(file, sizeof(baseparameter_info) - sizeof(pq_tuning_info), SEEK_SET);
+    ret = read(file, info, sizeof(pq_tuning_info));
+    if(ret < 0){
+        pthread_rwlock_unlock(&rwlock);
+        return -EIO;
+    }
+    u32 crc = get_crc32((unsigned char *)info, sizeof(pq_tuning_info) - sizeof(u32));
+    LOGD("get_crc32 %d, info->crc %d", crc, info->crc);
+    if(crc != info->crc){
+        LOGD("crc32 error");
+        pthread_rwlock_unlock(&rwlock);
+        return -EPERM;
+    }
+    sync();
+    close(file);
+    pthread_rwlock_unlock(&rwlock);
+    return 0;
+}
+
+int baseparameter_api::get_csc_info(struct csc_info *csc) {
+    struct pq_tuning_info param;
+    int ret = get_pq_tuning_info(&param);
+    if(ret < 0){
+        return ret;
+    }else {
+        memcpy(csc, &param.csc ,sizeof(csc_info));
+        return 0;
+    }
+}
+
+int baseparameter_api::set_csc_info(struct csc_info *csc) {
+    struct pq_tuning_info param;
+    int ret = get_pq_tuning_info(&param);
+    if(ret < 0){
+        return ret;
+    }else {
+        memcpy(&param.csc, csc, sizeof(csc_info));
+        return set_pq_tuning_info(&param);
+    }
+}
+
+int baseparameter_api::get_dci_info(struct dci_info *dci) {
+    struct pq_tuning_info param;
+    int ret = get_pq_tuning_info(&param);
+    if(ret < 0){
+        return ret;
+    }else {
+        memcpy(dci, &param.dci ,sizeof(dci_info));
+        return 0;
+    }
+}
+
+int baseparameter_api::set_dci_info(struct dci_info *dci) {
+    struct pq_tuning_info param;
+    int ret = get_pq_tuning_info(&param);
+    if(ret < 0){
+        return ret;
+    }else {
+        memcpy(&param.dci, dci, sizeof(dci_info));
+        return set_pq_tuning_info(&param);
+    }
+}
+
+int baseparameter_api::get_acm_info(struct acm_info *acm) {
+    struct pq_tuning_info param;
+    int ret = get_pq_tuning_info(&param);
+    if(ret < 0){
+        return ret;
+    }else {
+        memcpy(acm, &param.acm ,sizeof(acm_info));
+        return 0;
+    }
+}
+
+int baseparameter_api::set_acm_info(struct acm_info *acm) {
+    struct pq_tuning_info param;
+    int ret = get_pq_tuning_info(&param);
+    if(ret < 0){
+        return ret;
+    }else {
+        memcpy(&param.acm, acm, sizeof(acm_info));
+        return set_pq_tuning_info(&param);
+    }
+}

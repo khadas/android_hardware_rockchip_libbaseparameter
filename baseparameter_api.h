@@ -32,7 +32,7 @@
 #include <pthread.h>
 
 #define BASEPARAMETER_MAJOR_VERSION 2
-#define BASEPARAMETER_MINOR_VERSION 0
+#define BASEPARAMETER_MINOR_VERSION 1
 #define AUTO_BIT_RESET      0x00
 #define RESOLUTION_AUTO     (1<<0)
 #define COLOR_AUTO          (1<<1)
@@ -45,6 +45,7 @@
 #define BASE_PARAMETER 0
 #define BACKUP_PARAMETER 1
 
+typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
 
@@ -62,6 +63,11 @@ enum  output_depth{
     Automatic=0,
     depth_24bit=8,
     depth_30bit=10,
+};
+
+enum csc_mode {
+    HIGH_QUALITY_MODE=0,
+    LOW_LATENCY_MODE=1,
 };
 
 struct disp_header {
@@ -139,8 +145,53 @@ struct disp_info {
     struct gamma_lut_data gamma_lut_data; /* gamma 信息, size: 6146 Byte */
     struct cubic_lut_data cubic_lut_data; /* 3D lut信息, size: 29480 Byte */
     struct framebuffer_info framebuffer_info; /* framebuffer信息, size: 12 Byte */
-    u32 reserved[244]; /* 预留, size: 244 Byte*/
+    u32 reserved[244]; /* 预留, size: 976 Byte*/
     u32 crc; /* CRC 校验, size: 4 Byte */
+};
+
+struct csc_info {
+    bool cscEnable;
+    csc_mode mode;
+    u32 cscBrightness;
+    u32 cscContrast;
+    u32 cscSaturation;
+    u32 cscHue;
+    u32 cscRGain;
+    u32 cscGGain;
+    u32 cscBGain;
+};
+
+struct dci_info {
+    bool dciEnable;
+    u16 dciWgtCoef_low[33];
+    u16 dciWgtCoef_mid[33];
+    u16 dciWgtCoef_high[33];
+    u16 dciWeight_low[32];
+    u16 dciWeight_mid[32];
+    u16 dciWeight_high[32];
+};
+
+struct acm_info {
+    bool acmEnable;
+    u8 acmTableDeltaYbyH[65];
+    u8 acmTableDeltaHbyH[65];
+    u8 acmTableDeltaSbyH[65];
+    u8 acmTableGainYbyY[9];
+    u8 acmTableGainHbyY[9];
+    u8 acmTableGainSbyY[9];
+    u8 acmTableGainYbyS[13];
+    u8 acmTableGainHbyS[13];
+    u8 acmTableGainSbyS[13];
+    u32 lumGain;
+    u32 hueGain;
+    u32 satGain;
+};
+
+struct pq_tuning_info {
+    struct csc_info csc;
+    struct dci_info dci;
+    struct acm_info acm;
+    u32 crc;
 };
 
 struct baseparameter_info {
@@ -149,6 +200,7 @@ struct baseparameter_info {
     u16 minor_version; /* Baseparameter 小版本信息 */
     struct disp_header disp_header[8]; /* 通过head可以正确找到每一个显示设备的偏移,按现在每个disp_info的大小，最多支持8个disp */
     struct disp_info disp_info[8]; /* 显示设备信息 */
+    struct pq_tuning_info pq_tuning_info; /*软件PQ数据 */
 };
 
 
@@ -196,6 +248,15 @@ public:
     int set_framebuffer_info(unsigned int connector_type, unsigned int connector_id, framebuffer_info *info);
     int get_baseparameter_info(unsigned int index, baseparameter_info *info);
     int set_baseparameter_info(unsigned int index, baseparameter_info *info);
+    int set_pq_tuning_info(struct pq_tuning_info *info);
+    int get_pq_tuning_info(struct pq_tuning_info *info);
+    int get_csc_info(struct csc_info *csc);
+    int set_csc_info(struct csc_info *csc);
+    int get_dci_info(struct dci_info *dci);
+    int set_dci_info(struct dci_info *dci);
+    int get_acm_info(struct acm_info *acm);
+    int set_acm_info(struct acm_info *acm);
+
 private:
     const char* get_baseparameter_file();
     u32 get_crc32(unsigned char *buf, unsigned int size);
