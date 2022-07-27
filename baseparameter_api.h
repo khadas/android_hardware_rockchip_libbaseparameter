@@ -191,6 +191,25 @@ struct pq_tuning_info {
     struct csc_info csc;
     struct dci_info dci;
     struct acm_info acm;
+    struct gamma_lut_data gamma;
+    u32 crc;
+};
+
+struct white_balance_info {
+    u32 rgain;
+    u32 ggain;
+    u32 bgain;
+};
+
+struct pq_factory_info {
+    struct bcsh_info bcsh[4];
+    struct white_balance_info white_balance[3];
+    u8 cur_bcsh_index;
+    u8 cur_white_balance_index;
+    u8 cur_dci_index;
+    u8 cur_acm_index;
+    u8 cur_gamma_index;
+    u8 cur_cubic_index;
     u32 crc;
 };
 
@@ -200,9 +219,9 @@ struct baseparameter_info {
     u16 minor_version; /* Baseparameter 小版本信息 */
     struct disp_header disp_header[8]; /* 通过head可以正确找到每一个显示设备的偏移,按现在每个disp_info的大小，最多支持8个disp */
     struct disp_info disp_info[8]; /* 显示设备信息 */
-    struct pq_tuning_info pq_tuning_info; /*软件PQ数据 */
+    struct pq_tuning_info pq_tuning_info; /*PQ tuning数据 */
+    struct pq_factory_info pq_factory_info;	/*工厂存储的PQ数据 */
 };
-
 
 static char const *const device_template[] =
 {
@@ -256,6 +275,11 @@ public:
     int set_dci_info(struct dci_info *dci);
     int get_acm_info(struct acm_info *acm);
     int set_acm_info(struct acm_info *acm);
+    int get_pq_tuning_gamma(struct gamma_lut_data *data);
+    int set_pq_tuning_gamma(struct gamma_lut_data *data);
+    int get_pq_factory_info(struct pq_factory_info *info);
+    int set_pq_factory_info(struct pq_factory_info *info);
+    int get_version(unsigned short* major_version, unsigned short* minor_version);
 
 private:
     const char* get_baseparameter_file();
