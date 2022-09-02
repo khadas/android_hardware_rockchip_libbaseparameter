@@ -203,7 +203,7 @@ struct white_balance_info {
 
 struct pq_factory_info {
     struct bcsh_info bcsh[4];
-    struct white_balance_info white_balance[3];
+    struct white_balance_info white_balance[4];
     u8 cur_bcsh_index;
     u8 cur_white_balance_index;
     u8 cur_dci_index;
