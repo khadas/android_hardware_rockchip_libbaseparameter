@@ -493,7 +493,8 @@ int baseparameter_api::set_disp_header(unsigned int index, unsigned int connecto
 
 bool baseparameter_api::validate() {
     int file;
-    char head_flag[4];
+    char head_flag[5];
+    memset(head_flag, 0, 5);
     const char *baseparameterfile = get_baseparameter_file();
     if (!baseparameterfile) {
         sync();
