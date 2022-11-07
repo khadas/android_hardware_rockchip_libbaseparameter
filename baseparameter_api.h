@@ -213,6 +213,27 @@ struct pq_factory_info {
     u32 crc;
 };
 
+struct pq_sharp_info {
+    bool sharpEnable;
+    u32 sharpPeakingGain;
+    bool sharpEnableShootCtrl;
+    u32 sharpShootCtrlOver;
+    u32 sharpShootCtrlUnder;
+    bool sharpEnableCoringCtrl;
+    u16 sharpCoringCtrlRatio[4];
+    u16 sharpCoringCtrlZero[4];
+    u16 sharpCoringCtrlThrd[4];
+    bool sharpEnableGainCtrl;
+    u16 sharpGainCtrlPos[4];
+    bool sharpEnableLimitCtrl;
+    u16 sharpLimitCtrlPos0[4];
+    u16 sharpLimitCtrlPos1[4];
+    u16 sharpLimitCtrlBndPos[4];
+    u16 sharpLimitCtrlRatio[4];
+    u8 cur_sharp_index;
+    u32 crc;
+};
+
 struct baseparameter_info {
     char head_flag[4]; /* 头标识， "BASP" */
     u16 major_version; /* Baseparameter 大版本信息 */
@@ -221,6 +242,7 @@ struct baseparameter_info {
     struct disp_info disp_info[8]; /* 显示设备信息 */
     struct pq_tuning_info pq_tuning_info; /*PQ tuning数据 */
     struct pq_factory_info pq_factory_info;	/*工厂存储的PQ数据 */
+    struct pq_sharp_info pq_sharp_info;	/*PQ sharp数据 */
 };
 
 static char const *const device_template[] =
@@ -279,6 +301,8 @@ public:
     int set_pq_tuning_gamma(struct gamma_lut_data *data);
     int get_pq_factory_info(struct pq_factory_info *info);
     int set_pq_factory_info(struct pq_factory_info *info);
+    int get_pq_sharp_info(struct pq_sharp_info *info);
+    int set_pq_sharp_info(struct pq_sharp_info *info);
     int get_version(unsigned short* major_version, unsigned short* minor_version);
 
 private:

@@ -785,6 +785,29 @@ int baseparameter_api::set_pq_factory_info(struct pq_factory_info *info) {
     return ret;
 }
 
+int baseparameter_api::get_pq_sharp_info(struct pq_sharp_info *info) {
+    baseparameter_info base;
+    int ret = get_baseparameter_info(0, &base);
+    if (ret == 0) {
+        memcpy(info, &base.pq_sharp_info, sizeof(pq_sharp_info));
+    }
+    return ret;
+}
+
+int baseparameter_api::set_pq_sharp_info(struct pq_sharp_info *info) {
+    int ret;
+    u32 crc32 = get_crc32((unsigned char *)info, sizeof(pq_sharp_info) - sizeof(u32));
+    info->crc = crc32;
+    baseparameter_info base;
+    ret = get_baseparameter_info(0, &base);
+    if(ret != 0) {
+        return ret;
+    }
+    memcpy(&base.pq_sharp_info, info, sizeof(pq_sharp_info));
+    ret = set_baseparameter_info(0, &base);
+    return ret;
+}
+
 int baseparameter_api::get_version(unsigned short* major_version, unsigned short* minor_version) {
     baseparameter_info info;
     int ret = get_baseparameter_info(0, &info);
