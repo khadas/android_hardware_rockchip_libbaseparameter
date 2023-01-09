@@ -231,6 +231,8 @@ struct pq_sharp_info {
     u16 sharpLimitCtrlBndPos[4];
     u16 sharpLimitCtrlRatio[4];
     u8 cur_sharp_index;
+    u32 sharpPeakingGainMode[4];
+    u8 cur_sharp_peaking_gain_mode_index;
     u32 crc;
 };
 
