@@ -816,4 +816,25 @@ int baseparameter_api::get_version(unsigned short* major_version, unsigned short
     return ret;
 }
 
+int baseparameter_api::get_aipq_info(struct aipq_info *info) {
+    baseparameter_info base;
+    int ret = get_baseparameter_info(0, &base);
+    if (ret == 0) {
+        memcpy(info, &base.aipq_info, sizeof(aipq_info));
+    }
+    return ret;
+}
 
+int baseparameter_api::set_aipq_info(struct aipq_info *info) {
+    int ret;
+    u32 crc32 = get_crc32((unsigned char *)info, sizeof(aipq_info) - sizeof(u32));
+    info->crc = crc32;
+    baseparameter_info base;
+    ret = get_baseparameter_info(0, &base);
+    if(ret != 0) {
+        return ret;
+    }
+    memcpy(&base.aipq_info, info, sizeof(aipq_info));
+    ret = set_baseparameter_info(0, &base);
+    return ret;
+}

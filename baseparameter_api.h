@@ -45,9 +45,12 @@
 #define BASE_PARAMETER 0
 #define BACKUP_PARAMETER 1
 
-typedef unsigned char u8;
+typedef unsigned char  u8;
+typedef char           s8;
 typedef unsigned short u16;
-typedef unsigned int u32;
+typedef signed short   s16;
+typedef unsigned int   u32;
+typedef signed int     s32;
 
 enum output_format {
     output_rgb=0,
@@ -173,15 +176,15 @@ struct dci_info {
 
 struct acm_info {
     bool acmEnable;
-    u8 acmTableDeltaYbyH[65];
-    u8 acmTableDeltaHbyH[65];
-    u8 acmTableDeltaSbyH[65];
-    u8 acmTableGainYbyY[9];
-    u8 acmTableGainHbyY[9];
-    u8 acmTableGainSbyY[9];
-    u8 acmTableGainYbyS[13];
-    u8 acmTableGainHbyS[13];
-    u8 acmTableGainSbyS[13];
+    s16 acmTableDeltaYbyH[65];
+    s16 acmTableDeltaHbyH[65];
+    s16 acmTableDeltaSbyH[65];
+    s16 acmTableGainYbyY[585];
+    s16 acmTableGainHbyY[585];
+    s16 acmTableGainSbyY[585];
+    s16 acmTableGainYbyS[845];
+    s16 acmTableGainHbyS[845];
+    s16 acmTableGainSbyS[845];
     u32 lumGain;
     u32 hueGain;
     u32 satGain;
@@ -236,6 +239,30 @@ struct pq_sharp_info {
     u32 crc;
 };
 
+struct aipq_info {
+    bool aiSDEnable;
+    bool aiSREnable;
+    u32 aiSRFixModelIdx;
+    bool aiSRTuningEnable;
+    u32 aiSRUsmGainNatural;
+    bool aiSRUsmEnableCtrlNatural;
+    u32 aiSRUsmCtrlOverNatural;
+    u32 aiSRUsmCtrlUnderNatural;
+    u32 aiSRFusionGainNatural;
+    bool aiSRFusionEnableCtrlNatural;
+    u32 aiSRFusionCtrlOverNatural;
+    u32 aiSRFusionCtrlUnderNatural;
+    u32 aiSRUsmGainTextual;
+    bool aiSRUsmEnableCtrlTextual;
+    u32 aiSRUsmCtrlOverTextual;
+    u32 aiSRUsmCtrlUnderTextual;
+    u32 aiSRFusionGainTextual;
+    bool aiSRFusionEnableCtrlTextual;
+    u32 aiSRFusionCtrlOverTextual;
+    u32 aiSRFusionCtrlUnderTextual;
+    u32 crc;
+};
+
 struct baseparameter_info {
     char head_flag[4]; /* 头标识， "BASP" */
     u16 major_version; /* Baseparameter 大版本信息 */
@@ -245,6 +272,7 @@ struct baseparameter_info {
     struct pq_tuning_info pq_tuning_info; /*PQ tuning数据 */
     struct pq_factory_info pq_factory_info;	/*工厂存储的PQ数据 */
     struct pq_sharp_info pq_sharp_info;	/*PQ sharp数据 */
+    struct aipq_info aipq_info;	/*AI PQ数据 */
 };
 
 static char const *const device_template[] =
@@ -306,6 +334,8 @@ public:
     int get_pq_sharp_info(struct pq_sharp_info *info);
     int set_pq_sharp_info(struct pq_sharp_info *info);
     int get_version(unsigned short* major_version, unsigned short* minor_version);
+    int get_aipq_info(struct aipq_info *info);
+    int set_aipq_info(struct aipq_info *info);
 
 private:
     const char* get_baseparameter_file();
